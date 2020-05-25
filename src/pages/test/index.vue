@@ -1,12 +1,13 @@
 <template>
   <div class="test">
     <div class="page_btn">
+      <a-input-search placeholder="请输入名称或id" enter-button @search="getUser" style="width: 200px" v-model="searchKey"/>
       <a-button @click="modalShow = true" type="primary">添加成员</a-button>
     </div>
     <div class="test-table">
-      <a-table :columns="columns" :dataSource="list" :rowKey="record => record.id" :rowClassName="(rec,index) => index % 2 === 0 ? 'jishu' : 'oushu'">
+      <a-table :loading="loading" :columns="columns" :dataSource="list" :rowKey="record => record.id" :rowClassName="(rec,index) => index % 2 === 0 ? 'jishu' : 'oushu'" :pagination="{pageSize: 5}">
         <div slot="action" slot-scope="text, record">
-          <!-- <span class="handle-btn" style="margin-right:20px;">编辑</span> -->
+          <span class="handle-btn" style="margin-right:20px;" @click="modalShow = 'edit';formData=record">编辑</span>
           <span class="handle-btn" @click="deleteUser(record)" >删除</span>
         </div>
         <div slot="joinTime" slot-scope="text">
@@ -15,9 +16,9 @@
       </a-table>
     </div>
     <a-modal
-      title="添加人员"
-      :visible="modalShow"
-      v-if="modalShow"
+      :title="modalShow === 'edit' ? '编辑人员' : '添加人员'"
+      :visible="!!modalShow"
+      v-if="!!modalShow"
       @ok="handleOk"
       @cancel="handleCancel"
       :maskClosable='false'
@@ -57,6 +58,8 @@ import api from "@/api/user";
 export default {
   data() {
     return {
+      searchKey: '',
+      loading: false,
       list: [],
       columns: [
         {
@@ -94,16 +97,20 @@ export default {
   },
   methods: {
     getUser() {
+      this.loading=true
       api
         .ajax1({
-          path: 'findUser'
+          path: 'findUser',
+          key: this.searchKey
         })
         .then(res => {
           console.log(res);
           this.list = res.data.list
+          this.loading=false
         })
         .catch((e) => {
           console.log("error",e);
+          this.loading=false
         });
     },
     deleteUser(record) {
@@ -122,30 +129,53 @@ export default {
         });
     },
     handleOk() {
-      api.ajax1({
-        path: 'addUser',
-        ...this.formData
-      })
-      .then(res => {
-          console.log(res);
-          this.$message.success(res.data.message)
-          this.modalShow = false;
-          this.$refs.addForm.resetFields();
-          this.getUser()
+      if (this.modalShow === 'edit') {
+        api.ajax1({
+          path: 'editUser',
+          ...this.formData
         })
-        .catch((e) => {
-          console.log("error",e);
-        });
+        .then(res => {
+            console.log(res);
+            this.$message.success(res.data.message)
+            this.modalShow = false;
+            this.formData={}
+            this.getUser()
+          })
+          .catch((e) => {
+            console.log("error",e);
+          });
+      } else {
+        api.ajax1({
+          path: 'addUser',
+          ...this.formData
+        })
+        .then(res => {
+            console.log(res);
+            this.$message.success(res.data.message)
+            this.modalShow = false;
+            this.formData={}
+            this.getUser()
+          })
+          .catch((e) => {
+            console.log("error",e);
+          });
+      }
+      
     },
     handleCancel() {
       this.modalShow = false;
-      this.$refs.addForm.resetFields();
+      this.formData={}
     }
   }
 };
 </script>
 <style lang="less" scoped>
 .test{
+  .page_btn{
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+  }
   .test-table{
     margin-top: 15px;
     .handle-btn{
