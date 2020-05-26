@@ -1,9 +1,9 @@
 <template>
   <div class="layout-box">
     <div class="menu1">
-      <div class="logo">
+      <!-- <div class="logo">
         <img src="../assets/images/logo.png" />
-      </div>
+      </div> -->
       <!-- 一级菜单 -->
       <a-menu :selectedKeys="[oneLevelKey]" mode="inline" theme="dark" @click="gotoOtherPage">
         <template v-for="item in menuList">
