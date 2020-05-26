@@ -374,8 +374,8 @@ export default new Router({
         },
         {
           path: 'set/test',
-          meta: { menuLevel: 2 },
-          name: '测试',
+          // meta: { menuLevel: 2 },
+          // name: '测试',
           component: () => import('@/pages/test/index.vue'),
         }
       ]
